@@ -1,14 +1,14 @@
 from pymongo import MongoClient
+import pandas as pd
 
-# conecta no banco
+#conecta no banco
 client = MongoClient('mongodb://localhost:27017/')  
-db = client['local']  
+db = client['local'] 
 
-# pega as informações das collection
+# dados das collection
 carros_collection = db['Carros']
-montadoras_collection = db['Montadoras']
 
-# agregação com join
+# une as collection e extrai País
 pipeline = [
     {
         '$lookup': {
@@ -19,20 +19,22 @@ pipeline = [
         }
     },
     {
-        '$unwind': '$montadora_info'  
+        '$unwind': '$montadora_info' 
+    },
+    {
+        '$project': {
+            '_id': 0,  
+            'Carro': 1,  
+            'Cor': 1,  
+            'Montadora': 1, 
+            'País': '$montadora_info.País' 
+        }
     }
 ]
 
-# executa a agregacao criada
-agregacao = carros_collection.aggregate(pipeline)
+# executa a agregacao
+relacionamento = carros_collection.aggregate(pipeline)
 
-# exibe o resultado da agregacao
-for resultado in agregacao:
-    print({
-        'Carro': resultado['Carro'],
-        'Cor': resultado['Cor'],
-        'Montadora': resultado['Montadora'],
-        'País da Montadora': resultado['montadora_info']['País']
-    })
-
-print("relacionamento feito")
+# exibe a formatacao da agregacao em tabela
+table = pd.DataFrame(list(relacionamento))
+print(table)
