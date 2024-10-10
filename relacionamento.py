@@ -38,3 +38,8 @@ relacionamento = carros_collection.aggregate(pipeline)
 # exibe a formatacao da agregacao em tabela
 table = pd.DataFrame(list(relacionamento))
 print(table)
+
+with open('relacionamento_carros.js', 'w') as file:
+    file.write("db.CarrosPorPais.insertMany(" + table.to_json(orient='records') + ");")
+    
+print("salvo no arquivo 'relacionamento_carros.js'")
